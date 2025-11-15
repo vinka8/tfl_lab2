@@ -1,5 +1,5 @@
-
 \documentclass[a4paper, 14pt]{extarticle}
+
 % Поля
 %--------------------------------------
 \usepackage{geometry}
@@ -12,10 +12,6 @@
 \usepackage[T2A]{fontenc}
 \usepackage[utf8]{inputenc} 
 \usepackage[english, main=russian]{babel}
-
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.9}
-
 %--------------------------------------
 
 \usepackage{textcomp}
@@ -50,6 +46,7 @@
 
 %Списки
 \usepackage{enumitem}
+\usepackage{array}
 
 %Подписи
 \usepackage{caption} 
@@ -68,24 +65,41 @@
 %--------------------------------------
 
 \usepackage{tempora}
-\usepackage{amsmath}
-\usepackage{color}
+
+%Листинги
+%--------------------------------------
 \usepackage{listings}
-\lstset{
-  belowcaptionskip=1\baselineskip,
-  breaklines=true,
-  extendedchars=\true,
-  inputencoding=utf8x,
-  frame=L,
-  xleftmargin=\parindent,
-  language=Python,
-  showstringspaces=false,
-  basicstyle=\footnotesize\ttfamily,
-  keywordstyle=\bfseries\color{blue},
-  commentstyle=\itshape\color{purple},
-  identifierstyle=\color{black},
-  stringstyle=\color{red},
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+
+\lstset{   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,                                                                 
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
 }
+%--------------------------------------
+
+%%% Математические пакеты %%%
+%--------------------------------------
+\usepackage{amsthm,amsfonts,amsmath,amssymb,amscd}  % Математические дополнения от AMS
+\usepackage{mathtools}                              % Добавляет окружение multlined
+\usepackage[perpage]{footmisc}
+%--------------------------------------
 
 %--------------------------------------
 %			НАЧАЛО ДОКУМЕНТА
@@ -129,14 +143,14 @@
 
 %Полосы
 %--------------------------------------
-\vspace{0pt}
+\vspace{-25pt}
 \hspace{-35pt}\rule{\textwidth}{2.3pt}
 
-\vspace*{-20pt}
+\vspace*{-20.3pt}
 \hspace{-35pt}\rule{\textwidth}{0.4pt}
 %--------------------------------------
 
-\vspace{1ex}
+\vspace{1.5ex}
 \hspace{-35pt} \noindent \small ФАКУЛЬТЕТ\hspace{80pt} <<Информатика и системы управления>>
 
 \vspace*{-16pt}
@@ -151,17 +165,17 @@
 \vspace{11em}
 
 \begin{center}
-\Large {\bf Лабораторная работа № 1} \\ 
-\large {\bf по курсу <<Теория формальных языков>>} \\ 
+\Large {\bf Лабораторная работа № 2} \\ 
+\large {\bf по курсу <<Теория формальных языков>>} \\
 \end{center}\normalsize
 
 \vspace{8em}
 
 
 \begin{flushright}
-  {Студент группы ИУ9-51Б Винокурова Е. С.\hspace*{15pt} \\
+  {Студент группы ИУ9-51Б Винокурова Е. С. \hspace*{15pt}\\ 
   \vspace{2ex}
-  Преподаватель Непейвода А. Н.\hspace*{15pt}}
+  Преподаватель Непейвода А.Н.\hspace*{15pt}}
 \end{flushright}
 
 \bigskip
@@ -177,314 +191,200 @@
 %		КОНЕЦ ТИТУЛЬНОГО ЛИСТА
 %--------------------------------------
 
-
 \renewcommand{\ttdefault}{pcr}
 
 \setlength{\tabcolsep}{3pt}
 \newpage
 \setcounter{page}{2}
-\section{Задание}
+\tableofcontents
+\newpage
 
-По имеющейся SRS определить:
+\section{Задача}\label{Sect::task}
+По имеющемуся академическому регулярному выражению построить:
 
-- завершимость
+\begin{itemize}
+\item Минимальный ДКА, распознающий его язык (минимальность обосновать таблицей классов эквивалентности)
 
-- конечность классов эквивалентности по НФ (для построения эквивалентностей считаем, что правила могут применяться в обе стороны). Если их конечное число, то построить минимальную систему переписывания, им соответствующую.
+\item Возможно малый НКА, распознающий его язык. Возможно малый переключающийся (с конъюнкцией) КА, распознающий его язык. Частично обосновать таблицами множеств классов эквивалентности.
 
-- локальную конфлюэнтность и пополняемость по Кнуту-Бендиксу
+\item Расширенное регулярное выражение, распознающее тот же язык. В расширенном выражении можно использовать:
 
-По SRS $\mathcal{T}$ строится другая SRS $\mathcal{T}'$, которая должна сохранять те же классы эквивалентности. Если исходная SRS завершима, то правила в $\mathcal{T}'$ должны удовлетворять условию убывания левой части относительно правой по выбранному вами фундированному порядку $>$.
+\begin{itemize}
+\item wildcard-операцию . для замены произвольного символа алфавита;
+\item положительную итерацию $\tau^+$ и опцию $\tau?$. $\tau^+ = \tau\tau^*$, $\tau? = (\tau|\varepsilon)$;
+\item операции предпросмотра $\tau_0(?= \tau_1)\tau_2 \equiv \tau_0((\tau_1.*) \cap \tau_2)$ и ретроспективной проверки $\tau_0(?<= \tau_1)\tau_2 \equiv (\tau_0 \cap (\tau_1.*))\tau_2$, а также их отрицательные версии $\tau_0(?! \tau_1)\tau_2 \equiv \tau_0((\tau_1.*) \cap \tau_2)$ и $\tau_0(?<! \tau_1)\tau_2 \equiv (\tau_0 \cap (\tau_1.*))\tau_2$
 
-Провести автоматическое тестирование предполагаемой эквивалентности двух указанных SRS.
+\item классы букв $[c_1 \ldots c_k] \equiv (c_1|c_2|\ldots|c_k)$ и их дополнения $[$\^{}$c_1 \ldots c_k]$.
+\item (обязательно) маркеры начала и конца выражения \^{} и \$.
+\end{itemize}
+\end{itemize}
 
-\textbf{Фазз-тестирование эквивалентности:} строится случайное слово $\omega$ и случайная цепочка переписываний его в $\omega'$ по $\mathcal{T}'$. Проверить, можно ли получить $\omega'$ из $\omega$ (или наоборот) в рамках правил $\mathcal{T}'$.
+Провести автоматическое тестирование предполагаемой эквивалентности построенных распознавателей. Тем самым необходимо построить алгоритмы, определяющие принадлежность слова языку академического регулярного выражения, ДКА, НКА и ПКА.
 
-\textbf{Метаморфное тестирование:} выбрать инварианты, которые должны сохраняться (либо монотонно изменяться) при переписывании в рамках $\mathcal{T}'$. Порождать случайную цепочку переписываний над случайным словом в $\mathcal{T}'$ и проверить выполнимость инвариантов. Как минимум два разных инварианта.
+Требуется только фаза-тестирование эквивалентности: строится случайное слово $\omega$ и проверяется, принадлежит ли он языкам регулярного выражения, ДКА, НКА и ПКА согласованно.
 
 \textbf{Вариант 4}
-
-fgh $\rightarrow$ fff
-
-fgh $\rightarrow$ ggg
-
-fgh $\rightarrow$ hhh
-
-hh $\rightarrow$ hfhgh
-
-gggg $\rightarrow$ $\varepsilon$
+\[
+((aa | ab | ac)^*(bc | cc | ac)bb | abacc^*)^*
+\]
+\newpage
 
 
-\section{Проверка завершимости}
 
-Рассмотрим два инварианта. Первый инвариант — это количество пар `hh` в строке с учётом перекрытий. Например, для строки `hhh` количество пар будет 2. Второй инвариант — это сумма весов букв `g` в строке в зависимости от контекста. Будем считать, что если `g` находится в подстроке `fhgh`, то вес такого `g` равен 0; если `g` стоит рядом с другим `g` (то есть хотя бы с одной стороны от него находится другой `g`), то вес каждого такого `g` равен 2; во всех остальных случаях вес `g` равен 8. 
-
-Теперь рассмотрим сумму этих двух инвариантов для каждого правила и покажем, что она всегда строго убывает. Обозначим эту сумму через M.
-
-Рассмотрим правило `fgh $\rightarrow$ fff`. Для левой части `fgh` значение M = 8, а для правой части `fff` M = 0. Вне зависимости от контекста, в котором они находятся, M всегда уменьшается минимум на 8.
-
-Рассмотрим правило `fgh $\rightarrow$ ggg`. Для `fgh` значение M = 8, а для `ggg` M = 6. Контекст также не уменьшает разницу между левой и правой частями правила, поэтому для этого правила M уменьшается как минимум на 2.
-
-Рассмотрим правило `fgh $\rightarrow$ hhh`. Для `fgh` значение M = 8, а для `hhh` M = 2. Однако контекст может уменьшить разницу между левой и правой частями. Например, если взять строку `hfgh`, которая переходит в `hhhh`, получим изменение M: 8 $\rightarrow$ 3, то есть M уменьшается хотя бы на 5.
-
-Рассмотрим правило `hh $\rightarrow$ hfhgh`. Поскольку граничные буквы подстрок не меняются, контекст не влияет на разницу значений M. Таким образом, для `hh` значение M = 1, а для `hfhgh` M = 0, то есть M убывает на 1.
-
-Рассмотрим правило `gggg → $\varepsilon$`. Для `gggg` значение M = 8, а для `$\varepsilon$` M = 0. Однако при применении этого правила может возникнуть новая подстрока `fgh`, где вес `g` будет 8. Проверим, что это не увеличит M. Пусть есть строка `fgggggh`, для неё M = 10. Применив правило, получим `fgh`, для которой M = 8. Таким образом, даже в этом случае `M` строго уменьшается.
-
-Итак, для всех правил системы M строго убывает, и при этом M всегда неотрицательно. Следовательно, невозможно бесконечно применять правила, и система переписываний является завершимой.
-
-\section{Локальная конфлюэнтность и пополняемость по Кнуту-Бендиксу}
-SRS $\mathcal{T}$ локально не конфлюэнтна, так как из слова `fgh` можно получить 3 разных нормальных формы: `fff`, `ggg` и `hfhghfhgh`. 
-
-Построим по алгоритму Кнута-Бендикса систему $\mathcal{T}'$, которая сохраняет те же классы эквивалентности. Рассмотрим систему 
-
-fgh $\rightarrow$ fff
-
-ggg $\rightarrow$ fgh
-
-fgh $\rightarrow$ hhh
-
-hfhgh $\rightarrow$ hh
-
-gggg $\rightarrow$ $\varepsilon$
-
-Здесь слова сначала сравниваются по длинне, если длина одинаковая, то они упорядочиваются лексикографически, где `h` = 1, `f` = 2, `g` = 3. Рассмотрим критические пары.
-
-1. Из `fgh` можно получить `fff` и `hhh, поэтому добавим правило `fff` $\rightarrow$ `hhh`. Можно убрать правило `fgh` $\rightarrow$ `hhh`, так как это можно получить так `fgh` $\rightarrow$ `fff` $\rightarrow$ `hhh`.
-
-2. Из `ffff` можно получить `fhhh` и `hhhf`, добавим правило `fhhh` $\rightarrow$ `hhhf`.
-
-3. Из `gggg` можно получить $\varepsilon$, `ghhh` и `hhhg`, добавим правила `ghhh` $\rightarrow$ `hhhg` и `hhhg` $\rightarrow$ $\varepsilon$. Можно убрать правило `gggg` $\rightarrow$ $\varepsilon$, так как это можно получить так `gggg` $\rightarrow$ `gfgh` $\rightarrow$ `gfff` $\rightarrow$ `ghhh` $\rightarrow$ `hhhg` $\rightarrow$ $\varepsilon$.
-
-4. Из `ffffg` можно получить `f` и `hhhfg`, добавим правило `hhhfg` $\rightarrow$ `f`.
-
-5. Из `fffgh` можно получить `h` и `hhhff`, добавим правило `hhhff` $\rightarrow$ `h`.
-
-6. Из `fgggg` можно получить `f` и `hhhhh`, добавим правило `hhhhh` $\rightarrow$ `f`.
-
-7. Из `ffffff` можно получить `fh` и `hf`, добавим правило `fh` $\rightarrow$ `hf`. Можно убрать правило `fhhh` $\rightarrow$ `hhhf`, так как это можно получить так `fhhh` $\rightarrow$ `hfhh` $\rightarrow$ `hhfh` $\rightarrow$ `hhhf`.
-
-8. Из `hfhgh` можно получить `f` и `hh`, добавим правило `hh` $\rightarrow$ `f`. Можно убрать правило `fhhh` $\rightarrow$ `hhhf`, так как это можно получить так `fhhh` $\rightarrow$ `hfhh` $\rightarrow$ `hhfh` $\rightarrow$ `hhhf`. 
-
-9. Из `fghh` можно получить `ff` и `fgf`, добавим правило `fgf` $\rightarrow$ `ff`. 
-
-10. Из `gggg` можно получить $\varepsilon$, `ghf` и `hfg`, добавим правило `ghf` $\rightarrow$ `hfg` и `hfg` $\rightarrow$ $\varepsilon$. Можно убрать правило `hhhfg` $\rightarrow$ `f`, так как это можно получить `hhhfg` $\rightarrow$ `hh` $\rightarrow$ `f`. Также можно убрать правило `hfhgh` $\rightarrow$ `hh`, так как это можно получить так `hfhgh` $\rightarrow$ `hhfgh` $\rightarrow$ `hh`. Также можно убрать правило `hhhg` $\rightarrow$ $\varepsilon$, так как это можно получить так `hhhg` $\rightarrow$ `hfg` $\rightarrow$ $\varepsilon$.
-
-11. Из `fgfh` можно получить `f`, `hff` и `hffg`, добавим правило `hffg` $\rightarrow$ `hff` и `hff` $\rightarrow$ `f`. 
-
-12. Из `fgfh` можно получить `f` и `fg`, добавим правило `fg` $\rightarrow$ `f`. 
-
-13. Из `hfg` можно получить $\varepsilon$ и `hf`, добавим правило `hf` $\rightarrow$ $\varepsilon$. Можно убрать правило `hhhff` $\rightarrow$ `h`, так как это можно получить `hhhff` $\rightarrow$ `hhf` $\rightarrow$ `h`. Также можно убрать правило `hff` $\rightarrow$ `f`, так как это можно получить так `hff` $\rightarrow$ `f`, применив добавленное правило. Можно убрать правило `hhhhh` $\rightarrow$ `f`, так как это можно получить `hhhhh` $\rightarrow$ `hhhf` $\rightarrow$ `fhf` $\rightarrow$ `f`.
-
-14. Из `fhh` можно получить `ff` и `h`, добавим правило `ff` $\rightarrow$ `h`. 
-
-15. Из `ghf` можно получить $\varepsilon$ и `g`, добавим правило `g` $\rightarrow$ $\varepsilon$. Можно убрать правила `fgf` $\rightarrow$ `ff`, `hfg` $\rightarrow$ $\varepsilon$, `hffg` $\rightarrow$ `hff` и `fg` $\rightarrow$ `f`, так как их можно получить применив добавленное правило.
-
-Критических пар больше нет, то есть система конфлюэнтна, также все действия сохраняли классы эквивалентности, то есть полученная система $\mathcal{T}'$ эквивалентна исходной и имеет вид после привидения к минимамльной:
-
-fh $\rightarrow$ $\varepsilon$
-
-hh $\rightarrow$ f
-
-hf $\rightarrow$ $\varepsilon$
-
-ff $\rightarrow$ h
-
-g $\rightarrow$ $\varepsilon$
-
-\section{Классы эквивалентности}
-
-Рассмотрим классы эквивалентности полученной системы $\mathcal{T}'$, так как они совпадают с калссами эквивалентности исходной SRS, то $\mathcal{T}$ имеет такие же классы эквивалентности. Построим автомат по этой системе.
+\section{Минимальный ДКА}
+На основе академического регулярного выражения был построен недетерминированный конечный автомат, который затем детерминизирован и минимизирован; в результате получен минимальный детерминированный конечный автомат, распознающий данный язык. Минимальность ДКА доказана таблицей эквивалентности состояний.
 
 \begin{center}
-\includegraphics[width=100mm]{b}
+\includegraphics[width=170mm]{1}
 \end{center}
 
-Таким образом в SRS $\mathcal{T}$ ровно 3 класса эквивалентности $\varepsilon$, `f` и `h`.
+Изображение этого ДКА находится в файле DKA.png
 
-\section{Фазз-тестирование эквивалентности}
+\subsection{Обоснование минимальности ДКА}
+\begin{flushleft}
+\begin{tabular}{| m{1.5cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} | m{1.2cm} |} 
+\multicolumn{10}{c}{Таблица префиксов и суффиксов для ДКА} \\
+  \hline
+   - & $\varepsilon$ & $b$ & $bb$ & $c$ & $ac$ & $bcbb$ & $cbb$ & $bac$ & $accbb$ \\ 
+  \hline
+  $abac$ & 1 & 0 & 1 & 1 & 0 & 1 & 0 & 0 & 0 & 
+  \hline
+  $abaccc$ & 1 & 0 & 1 & 1 & 0 & 1 & 1 & 0 & 0 & 
+  \hline
+  $abacc$ & 1 & 0 & 0 & 1 & 0 & 1 & 1 & 0 & 0 & 
+  \hline
+  $\varepsilon$ & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 &  
+  \hline
+  $acb$ & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 
+  \hline
+  $acbcb$ & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 
+  \hline
+  $aba$ & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 1 &  
+  \hline
+  $ac$ & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 &  
+  \hline
+  $acbc$ & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 &  
+  \hline
+  $ab$ & 0 & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 0 &  
+  \hline
+  $a$ & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 &  
+  \hline
+  $aaa$ & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 1 &  
+  \hline
+  $aab$ & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 &  
+  \hline
+  $T$ & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 &  
+  \hline
+  $aa$ & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 &  
+  \hline
+\end{tabular}
 
-Код программы представлен в Листинге 1.
-\begin{lstlisting}
-import random
+\vspace{0.7cm}
 
-T = [
-    ("fgh", "fff"),
-    ("fgh", "ggg"),
-    ("fgh", "hhh"),
-    ("hh", "hfhgh"),
-    ("gggg", "")
-]
+\end{flushleft}
+Построенный ДКА является минимальным, поскольку все его состояния различимы. Это подтверждается таблицей префиксов и суффиксов, так как все строки в ней различны.
 
-T1 = [
-    ("fh", ""),
-    ("hh", "f"),
-    ("hf", ""),
-    ("ff", "h"),
-    ("g", "")
-]
+\section{Возможно малый НКА}
+На основе академического регулярного выражения с использованием линеаризации был построен, а затем частично минимизирован недетерминированный конечный автомат распознающий его язык.
 
-alphabet = ["f", "g", "h"]
+\begin{center}
+\includegraphics[width=170mm]{NKA}
+\end{center}
 
-def random_word():
-    return "".join(random.choice(alphabet) for _ in range(17))
+Изображение этого НКА находится в файле NKA.png
 
-def apply_random_rules(word):
-    for _ in range(8):
-        applicable = []
-        for lhs, rhs in T:
-            positions = []  
-            for i in range(len(word) - len(lhs) + 1):  
-                substring = word[i:i+len(lhs)] 
-                if substring == lhs:  
-                    positions.append(i) 
-            if positions:
-                applicable.append((lhs, rhs, positions))
-        if not applicable:
-            continue
-        lhs, rhs, positions = random.choice(applicable)
-        pos = random.choice(positions)
-        word = word[:pos] + rhs + word[pos+len(lhs):]
-    return word
+\subsection{Частичное обоснование минимальности НКА}
+\begin{flushleft}
+\begin{tabular}{| m{1.5cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} |} 
+\multicolumn{8}{c}{Таблица префиксов и суффиксов для НКА} \\
+  \hline
+   - & $bac$ & $ac$ & $b$ & $c$ & $\varepsilon$ & $bb$ & $cbb$ \\ 
+  \hline
+  $a$ & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 
+  \hline
+  $ab$ & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 
+  \hline
+  $bcb$ & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 
+  \hline
+  $aba$ & 0 & 0 & 0 & 1 & 0 & 0 & 1 &  
+  \hline
+  $\varepsilon$ & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 
+  \hline
+  $bc$ & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 
+  \hline
+  $b$ & 0 & 0 & 0 & 0 & 0 & 0 & 1 &  
+  \hline
+\end{tabular}
 
-def apply_rules(word, rules):
-    results = set()
-    for lhs, rhs in rules:
-        for i in range(len(word) - len(lhs) + 1):
-            if word[i:i+len(lhs)] == lhs:
-                new_word = word[:i] + rhs + word[i+len(lhs):]
-                results.add(new_word)
-    return results
+\vspace{0.7cm}
 
-def words(start, rules):
-    seen = set([start])
-    s = [start]
-    while s:
-        new_s = []
-        for w in s:
-            new_words = apply_rules(w, rules)
-            for nw in new_words:
-                if nw not in seen:
-                    seen.add(nw)
-                    new_s.append(nw)
-        s = new_s
-    return seen
+\end{flushleft}
 
-def words2(start, rules, check_set):
-    seen = set([start])
-    s = [start]
-    while s:
-        new_s = []
-        for w in s:
-            new_words = apply_rules(w, rules)
-            for nw in new_words:
-                if nw in check_set:
-                    return True  
-                if nw not in seen:
-                    seen.add(nw)
-                    new_s.append(nw)
-        s = new_s
-    return False  
+\section{Возможно малый ПКА}
+На основе академического регулярного выражения был построен переключающийся конечный автомат распознающий его язык.
 
-w0 = random_word()
-print("w =", w0)
-w1 = apply_random_rules(w0)
-print("w' =", w1)
-if len(w0) <= len(w1):
-    words1 = words(w0, T1)
-    found = words2(w1, T1, words1)
-else:
-    words1 = words(w0, T1)
-    found = words2(w1, T1, words1)
-if found:
-    print("True")
-else:
-    print("False")
+\begin{center}
+\includegraphics[width=170mm]{PKA1}
+\end{center}
 
-\end{lstlisting}
+Изображение этого ПКА находится в файле PKA.png
 
-\section{Метаморфоное тестирование}
-Были рассмотрены два инварианта.
+\subsection{частичное обоснование минимальности ПКА}
+\begin{flushleft}
+\begin{tabular}{| m{1.5cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} | m{1cm} |} 
+\multicolumn{6}{c}{Таблица префиксов и суффиксов для ПКА} \\
+  \hline
+   - & $b$ & $bb$ & $bcbb$ & $c$ & $cbb$ \\ 
+  \hline
+  $abaccc$ & 0 & 1 & 1 & 1 & 1 & 
+  \hline
+  $abacc$ & 0 & 0 & 1 & 1 & 1 & 
+  \hline
+  $aba$ & 0 & 0 & 0 & 1 & 1 & 
+  \hline
+  $aaa$ & 0 & 0 & 0 & 0 & 1 & 
+  \hline
+  $aa$ & 0 & 0 & 1 & 0 & 0 & 
+  \hline
+\end{tabular}
 
-1. ($|\omega|_f$ - $|\omega|_h$)mod$_3$ этот инвариант не меняется при применении любых правил из систем переписывания $\mathcal{T}'$ и $\mathcal{T}$.
+\vspace{0.7cm}
 
-2. \[
-\begin{aligned}
-M(\omega) ={} & \frac{1}{12}(|\omega|_f + |\omega|_g + |\omega|_h) - \frac{1}{12}(|\omega|_{ff} + |\omega|_{fg} + |\omega|_{fh} +  |\omega|_{hf} +  |\omega|_{hh} + \\
-&+ |\omega|_{hg} +  |\omega|_{gf} +  |\omega|_{gg} +  |\omega|_{gh})
-\end{aligned} 
+\end{flushleft}
+
+\section{Расширенное регулярное выражение}
+Исходное регулярное выражение
+\[
+((aa | ab | ac)^*(bc | cc | ac)bb | abacc^*)^*
 \]
-Однако если $\omega$ = $\varepsilon$ то $M(\omega) = \frac{1}{12}$.
-Этот инвариант не убывает при применении любых правил из систем переписывания $\mathcal{T}'$ и $\mathcal{T}$. Коэффициенты этого инварианта было подобраны программно и проверены на контекстах разной длины.
+описывает произвольную (возможно пустую) последовательность блоков двух форм.
 
-Для проверки была написана программ представленная в Листинге 2.
-\begin{lstlisting}
-import random
-from fractions import Fraction
+В первой форме блока подвыражение $(aa | ab | ac)$ представляет собой все пары символов, начинающиеся с $a$ и продолжающиеся любой буквой из множества $\{a,b,c\}$. Это эквивалентно записи $(aa | ab | ac) \equiv a[abc]$
 
-alphabet = ["f", "g", "h"]
-rules = {
-    "fh": "",
-    "hh": "f",
-    "hf": "",
-    "ff": "h",
-    "g": ""
-}
+Повторение данной группы даёт
+$(aa | ab | ac)^* \equiv (a[abc])^*$
 
-def generate_word(min_len, max_len):
-    length = random.randint(min_len, max_len)
-    return "".join(random.choice(alphabet) for _ in range(length))
+Аналогично, подвыражение 
+$(bc | cc | ac)$ всегда имеет вид $xc$, где  $x \in \{a,b,c\}$, то есть
+$(bc | cc | ac) \equiv [abc]c$
 
-def apply_rules_fixed_steps(word, rules, steps):
-    for _ in range(steps):
-        applicable = [(lhs, rhs) for lhs, rhs in rules.items() if lhs in word]
-        if not applicable:
-            break 
-        lhs, rhs = random.choice(applicable)
-        start_idx = random.choice([i for i in range(len(word)) if word.startswith(lhs, i)])
-        word = word[:start_idx] + rhs + word[start_idx + len(lhs):]
-    return word
+Таким образом, первая форма блока становится $(a[abc])^*[abc]cbb$
 
-def diff_mod3(word):
-    return (word.count("f") - word.count("h")) % 3
-
-def invariant_M(w):
-    S = ['f','g','h','ff','fg','fh','gf','gg','gh','hf','hg',
-         'hh']
-    alpha = [
-        Fraction(1,12), Fraction(1,12), Fraction(1,12),
-        Fraction(-1,12), Fraction(-1,12),Fraction(-1,12),Fraction(-1,12),Fraction(-1,12),Fraction(-1,12),Fraction(-1,12),Fraction(-1,12),Fraction(-1,12)
-    ]
-    def count_substring(s, w):
-        count = 0
-        L = len(s)
-        for i in range(len(w) - L + 1):
-            if w[i:i+L] == s:
-                count += 1
-        return count
-    M = Fraction(0,1)
-    for s,a in zip(S, alpha):
-        M += a * count_substring(s, w)
-    if w == "":
-         M = Fraction(1, 12)
-    return M
-
-start = generate_word(15, 20)
-start_val1 = diff_mod3(start)
-start_val2 = invariant_M(start)
-    
-end = apply_rules_fixed_steps(start, rules, steps=15)
-end_val1 = diff_mod3(end)
-end_val2 = invariant_M(end)
-a1 = start_val1 == end_val1
-a2 = start_val2 == end_val2
-if not (a1 and a2):
-    print(start_val1 == end_val1)
-    print(start_val2 <= end_val2, start_val2, end_val2)
-    print(start, end)
-else:
-    print("Инварианты верны")
-\end{lstlisting}
+Вторая форма блока имеет вид $abacc^*$. Поскольку после обязательного символа $c$ следует $c^*$, общее число букв $c$ в конце не менее одного, следовательно,
+ $abacc^* \equiv abac+$.
 
 
+Объединяя обе формы, а также сохраняя внешнюю звезду, получаем эквивалентное расширенное регулярное выражение:
+\[
+^\land((a[abc])^*[abc]cbb | abac^+)^*\$.
+\]
+
+\section{Фазз-тестирование}
+Для проверки эквивалентности построенных распознавателей было написано автоматическое тестирование.
+
+Программа генерирует случайные слова над алфавитом {a,b,c} как полностью случайные, так и случайные, которые соответствуют регулярному выражению.
+Для каждого слова выполняется проверка принадлежности языку с использованием четырёх методов: регулярного выражения, минимального ДКА, построенного НКА, переключающегося конечного автомата.
+
+Код программы представлен в test.cpp.
 
 \end{document}

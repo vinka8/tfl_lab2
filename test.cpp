@@ -8,6 +8,9 @@
 #include <map>
 #include <queue>
 #include <fstream>
+#include <unordered_map>
+#include <unordered_set>
+#include <array>
 
 using namespace std;
 
@@ -18,15 +21,12 @@ string generateWord(int maxBlocks = 5) {
     int blocks = rand() % (maxBlocks + 1);
     for (int b = 0; b < blocks; ++b) {
         if (rand() % 2 == 0) {
-            // (aa|ab|ac)*(ac|bc|cc)bb
             int xCount = rand() % 5;
-            for (int i = 0; i < xCount; ++i) {
+            for (int i = 0; i < xCount; ++i)
                 result += xParts[rand() % 3];
-            }
             result += yParts[rand() % 3];
             result += "bb";
         } else {
-            // abacc* 
             result += "aba";
             result += "c";
             int cCount = rand() % 6;
@@ -40,14 +40,13 @@ string generateWord(int maxBlocks = 5) {
 string generateRandomWord(int n) {
     string word = "";
     string alphabet = "abc";
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i)
         word += alphabet[rand() % 3];
-    }
     return word;
 }
 
 bool checkRegex(const string& word) {
-    regex re("((aa|ab|ac)*(bc|cc|ac)bb|abacc*)*");
+    static const regex re("((aa|ab|ac)*(bc|cc|ac)bb|abacc*)*");
     return regex_match(word, re);
 }
 
@@ -142,119 +141,131 @@ bool checkNFA(const string& word) {
     return false;
 }
 
-set<int> epsilonClosure(const set<int>& states, const map<int, set<int>>& epsilonTransitions) {
-    set<int> closure = states;
-    queue<int> q;
-    for (int st : states) q.push(st);
-    while (!q.empty()) {
-        int cur = q.front(); 
-        q.pop();
-        if (epsilonTransitions.count(cur)) {
-            for (int next : epsilonTransitions.at(cur)) {
-                if (!closure.count(next)) {
-                    closure.insert(next);
-                    q.push(next);
-                }
-            }
+int ci(char ch){ return ch=='a'?0:(ch=='b'?1:2); }
+bool checkPKA(const unordered_map<string, array<unordered_set<string>, 3>>& transitions, 
+                const string& startState, 
+                const unordered_set<string>& acceptingStates, 
+                const string& word) {
+    unordered_set<string> currentStates = {startState};
+    for(char symbol : word) {
+        unordered_set<string> nextStates;
+        int idx = ci(symbol);
+        for(const string& st : currentStates) {
+            auto it = transitions.find(st);
+            if(it == transitions.end()) continue;
+            for(const string& t : it->second[idx]) 
+                nextStates.insert(t);
         }
+        currentStates = nextStates;
+        if(currentStates.empty()) return false;
     }
-    return closure;
-}
-
-set<int> moveSwitchingFA(const set<int>& states, char symbol,
-                          const map<pair<int,char>, set<int>>& transitions,
-                          const map<int, set<int>>& epsilonTransitions) {
-    set<int> nextStates;
-    for (int st : states) {
-        auto it = transitions.find({st, symbol});
-        if (it != transitions.end()) {
-            nextStates.insert(it->second.begin(), it->second.end());
-        }
-    }
-    return epsilonClosure(nextStates, epsilonTransitions);
-}
-
-bool checkSwitchingFA(const string& word) {
-    map<pair<int,char>, set<int>> transitions;
-    map<int,set<int>> epsilonTrans;
-
-    epsilonTrans[0] = {1,7}; // S -> A0, B0
-
-    // (aa|ab|ac)*
-    transitions[{1,'a'}] = {2};
-    transitions[{2,'a'}] = {1};
-    transitions[{2,'b'}] = {1};
-    transitions[{2,'c'}] = {1};
-
-    transitions[{1,'a'}].insert(3);
-    transitions[{1,'b'}].insert(3);
-    transitions[{1,'c'}].insert(3);
-    transitions[{3,'c'}] = {4}; 
-    transitions[{4,'b'}] = {5};
-    transitions[{5,'b'}] = {6}; 
-    epsilonTrans[6] = {0};     
-
-    // abacc*
-    transitions[{7,'a'}] = {8};
-    transitions[{8,'b'}] = {9};
-    transitions[{9,'a'}] = {10};
-    transitions[{10,'c'}] = {11};
-    transitions[{11,'c'}] = {11};
-    epsilonTrans[11] = {0};
-
-    set<int> start = epsilonClosure({0}, epsilonTrans);
-    set<int> accepting = {0}; // S — принимающее
-    set<int> currentStates = start;
-    for (char c : word) {
-        currentStates = moveSwitchingFA(currentStates, c, transitions, epsilonTrans);
-    }
-    for (int st : currentStates) if (accepting.count(st)) return true;
+    for(const string& st : currentStates)
+        if(acceptingStates.count(st)) return true;
     return false;
 }
 
+void PKA(unordered_map<string, array<unordered_set<string>,3>> &a1,
+                    unordered_set<string> &acc1,
+                    unordered_map<string, array<unordered_set<string>,3>> &a2,
+                    unordered_set<string> &acc2,
+                    string &start1, string &start2)
+{
+    start1 = "a1";
+    acc1 = {"a1","a8","a10"};
+    a1["a1"][ci('a')].insert("a2"); a1["a1"][ci('a')].insert("a3"); a1["a1"][ci('a')].insert("a4");
+    a1["a1"][ci('b')].insert("a3"); a1["a1"][ci('c')].insert("a3");
+
+    char chars1[] = {'a','b','c'};
+    for(char s : chars1) a1["a2"][ci(s)].insert("a6");
+
+    a1["a3"][ci('c')].insert("a7");
+    a1["a4"][ci('b')].insert("a5");
+    a1["a5"][ci('a')].insert("a8");
+
+    a1["a6"][ci('a')].insert("a2");
+    a1["a6"][ci('a')].insert("a3");
+    a1["a6"][ci('b')].insert("a3");
+    a1["a6"][ci('c')].insert("a3");
+
+    a1["a7"][ci('b')].insert("a9");
+    a1["a8"][ci('a')].insert("a8"); a1["a8"][ci('c')].insert("a8"); a1["a8"][ci('c')].insert("a10");
+    a1["a9"][ci('b')].insert("a1");
+    a1["a10"][ci('a')].insert("a2"); a1["a10"][ci('a')].insert("a3"); a1["a10"][ci('a')].insert("a4");
+    a1["a10"][ci('b')].insert("a3"); a1["a10"][ci('c')].insert("a3");
+
+
+    
+    start2 = "b1";
+    acc2 = {"b1", "b8"};
+
+    a2["b1"][ci('a')].insert("b2"); a2["b1"][ci('a')].insert("b3"); a2["b1"][ci('a')].insert("b9");
+    a2["b1"][ci('b')].insert("b2"); a2["b1"][ci('b')].insert("b9");
+    a2["b1"][ci('c')].insert("b9");
+
+    a2["b2"][ci('a')].insert("b6");
+    a2["b2"][ci('b')].insert("b6");
+    a2["b2"][ci('c')].insert("b6");
+
+    a2["b3"][ci('b')].insert("b5");
+
+    a2["b4"][ci('b')].insert("b1");
+
+    a2["b5"][ci('a')].insert("b7");
+
+    a2["b6"][ci('a')].insert("b2"); a2["b6"][ci('a')].insert("b9");
+    a2["b6"][ci('b')].insert("b2"); a2["b6"][ci('b')].insert("b9");
+    a2["b6"][ci('c')].insert("b9");
+
+    a2["b7"][ci('c')].insert("b8");
+
+    a2["b8"][ci('a')].insert("b2"); a2["b8"][ci('a')].insert("b3"); a2["b8"][ci('a')].insert("b9");
+    a2["b8"][ci('b')].insert("b2"); a2["b8"][ci('b')].insert("b9");
+    a2["b8"][ci('c')].insert("b8"); a2["b8"][ci('c')].insert("b9");
+
+    a2["b9"][ci('a')].insert("b10");
+    a2["b9"][ci('b')].insert("b10");
+    a2["b9"][ci('c')].insert("b10");
+
+    a2["b10"][ci('b')].insert("b4");
+}
+
+
 int main() {
     srand(time(0));
+    unordered_map<string, array<unordered_set<string>,3>> a1, a2;
+    unordered_set<string> acc1, acc2;
+    string start1, start2;
+    PKA(a1, acc1, a2, acc2, start1, start2);
 
-    int numWords = 10000;
+    int totalEqual = 0, mismatches = 0;
+    int numWords = 100000;
     int maxLength = 100;
 
-    int mismatchesDFA=0;
-    int mismatchesNFA=0;
-    int mismatchesSwitch=0;
-
-    ofstream logFile("mismatches.txt");
-
-    for (int i=0;i<numWords;i++) {
+    for(int i=0;i<numWords;++i){
         string word;
         if (rand() % 2 == 0) {
-            int length = rand()%maxLength + 10;
+            int length = rand() % maxLength + 1;
             word = generateRandomWord(length);
         } else {
             word = generateWord();
         }
-        
-        bool regexResult = checkRegex(word);
-        if (regexResult) cout << word << endl;
-        bool dfaResult = checkDFA(word);
-        bool nfaResult = checkNFA(word);
-        bool switchResult = checkSwitchingFA(word);
+        bool r = checkRegex(word);
+        bool dfa = checkDFA(word);
+        bool nfa = checkNFA(word);
+        bool a1_accept = checkPKA(a1,start1,acc1,word);
+        bool a2_accept = checkPKA(a2,start2,acc2,word);
+        bool pka = a1_accept && a2_accept;
 
-        if (regexResult != dfaResult) mismatchesDFA++;
-        if (regexResult != nfaResult) mismatchesNFA++;
-        if (regexResult != switchResult) mismatchesSwitch++;
-
-        if (regexResult != dfaResult || regexResult != nfaResult || regexResult != switchResult) {
-            logFile << "Word: " << word
-                    << " | Regex: " << regexResult
-                    << " | DFA: " << dfaResult
-                    << " | NFA: " << nfaResult
-                    << " | SwitchingFA: " << switchResult << endl;
+        if((pka == r) & (dfa == r) & (nfa == r)) totalEqual++;
+        else {
+            mismatches++;
+            cout<<"Word: "<<word<<" | Regex: "<<r<<" | DFA: "<<dfa<<" | NFA: "<<nfa<<" | PKA: "<<pka<<a1_accept<<a2_accept<<endl;
         }
     }
-    logFile.close();
-    cout <<  "DFA mismatches: " << mismatchesDFA << endl;
-    cout <<  "NFA mismatches: " << mismatchesNFA << endl;
-    cout << "Switching FA mismatches: " << mismatchesSwitch << endl;
+
+    cout<<"Всего слов: "<<numWords<<endl;
+    cout<<"Совпадений: "<<totalEqual<<endl;
+    cout<<"Несовпадений: "<<mismatches<<endl;
 
     return 0;
 }
